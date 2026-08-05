@@ -35,13 +35,13 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
     "@playwright/test": "1.62.1",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.1.2",
     "dotenv": "latest",
     "prisma": "7.9.1",
-    "supabase": "2.110.0",
+    "supabase": "2.111.0",
     "tsx": "latest",
-    "turbo": "2.10.5",
-    "typescript": "~6.0.3",
+    "turbo": "2.10.8",
+    "typescript": "~7.0.2",
     "vitest": "4.1.10"
   }
 }
