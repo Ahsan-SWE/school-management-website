@@ -1,0 +1,21 @@
+﻿{
+  "expo": {
+    "name": "School Platform",
+    "slug": "school-platform",
+    "scheme": "schoolplatform",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.schoolplatform"
+    },
+    "android": {
+      "package": "com.example.schoolplatform"
+    }
+  }
+}

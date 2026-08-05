@@ -1,0 +1,21 @@
+{
+  "name": "@school-platform/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@school-platform/events": "workspace:*",
+    "@school-platform/observability": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "latest",
+    "typescript": "~6.0.3",
+    "vitest": "4.1.10"
+  }
+}

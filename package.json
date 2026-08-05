@@ -1,0 +1,47 @@
+{
+  "name": "school-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Production-oriented multi-tenant school management platform monorepo.",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "postinstall": "pnpm db:generate",
+    "dev": "turbo run dev --parallel",
+    "dev:web": "pnpm --filter @school-platform/web dev",
+    "dev:api": "pnpm --filter @school-platform/api dev",
+    "dev:worker": "pnpm --filter @school-platform/worker dev",
+    "dev:mobile": "pnpm --filter @school-platform/mobile start",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "playwright test",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "db:generate": "prisma generate",
+    "db:validate": "prisma validate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx database/prisma/seed.ts",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "format:check": "biome format ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.6",
+    "@playwright/test": "1.62.1",
+    "@types/node": "^24.0.0",
+    "dotenv": "latest",
+    "prisma": "7.9.1",
+    "supabase": "2.110.0",
+    "tsx": "latest",
+    "turbo": "2.10.5",
+    "typescript": "~6.0.3",
+    "vitest": "4.1.10"
+  }
+}

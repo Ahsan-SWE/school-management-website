@@ -1,0 +1,2 @@
+-- Domain seed data is managed by `pnpm db:seed`.
+-- Keep Supabase-specific auth/storage fixtures here when required.

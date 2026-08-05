@@ -1,0 +1,23 @@
+{
+  "name": "@school-platform/ui-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "react": "19.2.8",
+    "typescript": "~6.0.3",
+    "vitest": "4.1.10"
+  }
+}

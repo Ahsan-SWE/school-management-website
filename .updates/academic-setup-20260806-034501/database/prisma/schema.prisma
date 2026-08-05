@@ -1,0 +1,272 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../../packages/database/src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["public"]
+}
+
+enum TenantStatus {
+  PENDING
+  ACTIVE
+  RESTRICTED
+  SUSPENDED
+  TERMINATED
+
+  @@schema("public")
+}
+
+enum BranchStatus {
+  ACTIVE
+  INACTIVE
+
+  @@schema("public")
+}
+
+enum PersonStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+
+  @@schema("public")
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  ENDED
+
+  @@schema("public")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PUBLISHED
+  FAILED
+
+  @@schema("public")
+}
+
+model School {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code      String       @unique @db.VarChar(40)
+  name      String       @db.VarChar(200)
+  status    TenantStatus @default(PENDING)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version   Int          @default(1)
+
+  branches    Branch[]
+  people      SchoolPerson[]
+  memberships Membership[]
+  roles       Role[]
+  auditEvents AuditEvent[]
+  outboxEvents OutboxEvent[]
+
+  @@map("schools")
+  @@schema("public")
+}
+
+model Branch {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String       @map("school_id") @db.Uuid
+  code      String       @db.VarChar(40)
+  name      String       @db.VarChar(200)
+  status    BranchStatus @default(ACTIVE)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version   Int          @default(1)
+
+  school      School       @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  memberships Membership[]
+
+  @@unique([schoolId, code])
+  @@unique([schoolId, id])
+  @@index([schoolId, status])
+  @@map("branches")
+  @@schema("public")
+}
+
+model UserAccount {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authUserId          String   @unique @map("auth_user_id") @db.Uuid
+  email               String?  @db.Citext
+  phone               String?  @db.VarChar(40)
+  accountStatus       String   @default("ACTIVE") @map("account_status") @db.VarChar(30)
+  preferredLocale     String   @default("bn-BD") @map("preferred_locale") @db.VarChar(20)
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version             Int      @default(1)
+
+  people      SchoolPerson[]
+  memberships Membership[]
+
+  @@map("user_accounts")
+  @@schema("public")
+}
+
+model SchoolPerson {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId      String       @map("school_id") @db.Uuid
+  userAccountId String?      @map("user_account_id") @db.Uuid
+  personType    String       @map("person_type") @db.VarChar(40)
+  displayName   String       @map("display_name") @db.VarChar(200)
+  status        PersonStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version       Int          @default(1)
+
+  school      School       @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  userAccount UserAccount? @relation(fields: [userAccountId], references: [id], onDelete: SetNull)
+  memberships Membership[]
+
+  @@unique([schoolId, id])
+  @@index([schoolId, displayName])
+  @@index([schoolId, userAccountId])
+  @@map("school_people")
+  @@schema("public")
+}
+
+model Membership {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId       String           @map("school_id") @db.Uuid
+  branchId       String?          @map("branch_id") @db.Uuid
+  userAccountId  String           @map("user_account_id") @db.Uuid
+  schoolPersonId String           @map("school_person_id") @db.Uuid
+  membershipType String           @map("membership_type") @db.VarChar(40)
+  status         MembershipStatus @default(INVITED)
+  effectiveFrom  DateTime         @default(now()) @map("effective_from") @db.Timestamptz(6)
+  effectiveTo    DateTime?        @map("effective_to") @db.Timestamptz(6)
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version        Int              @default(1)
+
+  school       School       @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  branch       Branch?      @relation(fields: [schoolId, branchId], references: [schoolId, id], onDelete: Restrict)
+  userAccount  UserAccount  @relation(fields: [userAccountId], references: [id], onDelete: Restrict)
+  schoolPerson SchoolPerson @relation(fields: [schoolId, schoolPersonId], references: [schoolId, id], onDelete: Restrict)
+  roleAssignments MembershipRole[]
+
+  @@unique([schoolId, id])
+  @@index([schoolId, userAccountId, status])
+  @@index([schoolId, schoolPersonId])
+  @@map("memberships")
+  @@schema("public")
+}
+
+model Role {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId  String?  @map("school_id") @db.Uuid
+  code      String   @db.VarChar(80)
+  name      String   @db.VarChar(120)
+  roleType  String   @map("role_type") @db.VarChar(40)
+  status    String   @default("ACTIVE") @db.VarChar(30)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  version   Int      @default(1)
+
+  school          School?          @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  permissions     RolePermission[]
+  roleAssignments MembershipRole[]
+
+  @@unique([schoolId, code])
+  @@index([schoolId, status])
+  @@map("roles")
+  @@schema("public")
+}
+
+model Permission {
+  key         String   @id @db.VarChar(160)
+  description String   @db.VarChar(500)
+  riskLevel   String   @default("LOW") @map("risk_level") @db.VarChar(30)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  roles RolePermission[]
+
+  @@map("permissions")
+  @@schema("public")
+}
+
+model RolePermission {
+  roleId        String @map("role_id") @db.Uuid
+  permissionKey String @map("permission_key") @db.VarChar(160)
+  effect        String @default("ALLOW") @db.VarChar(10)
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionKey], references: [key], onDelete: Cascade)
+
+  @@id([roleId, permissionKey])
+  @@map("role_permissions")
+  @@schema("public")
+}
+
+model MembershipRole {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId         String    @map("school_id") @db.Uuid
+  membershipId     String    @map("membership_id") @db.Uuid
+  roleId           String    @map("role_id") @db.Uuid
+  scopeType        String    @map("scope_type") @db.VarChar(40)
+  scopeReferenceId String?   @map("scope_reference_id") @db.Uuid
+  effectiveFrom    DateTime  @default(now()) @map("effective_from") @db.Timestamptz(6)
+  effectiveTo      DateTime? @map("effective_to") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  membership Membership @relation(fields: [schoolId, membershipId], references: [schoolId, id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@index([schoolId, membershipId])
+  @@index([roleId])
+  @@map("membership_roles")
+  @@schema("public")
+}
+
+model AuditEvent {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId     String   @map("school_id") @db.Uuid
+  actorId      String?  @map("actor_id") @db.Uuid
+  membershipId String?  @map("membership_id") @db.Uuid
+  action       String   @db.VarChar(160)
+  resourceType String   @map("resource_type") @db.VarChar(120)
+  resourceId   String?  @map("resource_id") @db.Uuid
+  outcome      String   @db.VarChar(30)
+  reason       String?  @db.VarChar(500)
+  requestId    String?  @map("request_id") @db.VarChar(120)
+  traceId      String?  @map("trace_id") @db.VarChar(120)
+  metadata     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+
+  @@index([schoolId, createdAt])
+  @@index([schoolId, resourceType, resourceId])
+  @@map("audit_events")
+  @@schema("public")
+}
+
+model OutboxEvent {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  schoolId        String       @map("school_id") @db.Uuid
+  eventType       String       @map("event_type") @db.VarChar(160)
+  aggregateType   String       @map("aggregate_type") @db.VarChar(120)
+  aggregateId     String       @map("aggregate_id") @db.Uuid
+  payload         Json
+  correlationId   String       @map("correlation_id") @db.VarChar(120)
+  status          OutboxStatus @default(PENDING)
+  availableAt     DateTime     @default(now()) @map("available_at") @db.Timestamptz(6)
+  attemptCount    Int          @default(0) @map("attempt_count")
+  publishedAt     DateTime?    @map("published_at") @db.Timestamptz(6)
+  lastError       String?      @map("last_error")
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+
+  @@index([status, availableAt])
+  @@index([schoolId, aggregateType, aggregateId])
+  @@map("outbox_events")
+  @@schema("public")
+}

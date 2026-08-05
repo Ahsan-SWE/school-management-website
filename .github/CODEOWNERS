@@ -1,0 +1,7 @@
+* @school-platform/maintainers
+
+/database/ @school-platform/database-reviewers @school-platform/security-reviewers
+/supabase/ @school-platform/database-reviewers @school-platform/security-reviewers
+/packages/permissions/ @school-platform/security-reviewers
+/packages/auth/ @school-platform/security-reviewers
+/.github/ @school-platform/platform-reviewers
