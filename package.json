@@ -33,15 +33,15 @@
     "format:check": "biome format ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.6",
-    "@playwright/test": "1.62.1",
-    "@types/node": "^24.0.0",
+    "@biomejs/biome": "2.5.14",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^26.6.3",
     "dotenv": "latest",
-    "prisma": "7.9.1",
-    "supabase": "2.110.0",
+    "prisma": "7.10.0",
+    "supabase": "2.118.0",
     "tsx": "latest",
-    "turbo": "2.10.5",
-    "typescript": "~6.0.3",
-    "vitest": "4.1.10"
+    "turbo": "2.11.4",
+    "typescript": "~7.0.2",
+    "vitest": "5.0.2"
   }
 }
