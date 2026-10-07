@@ -14,10 +14,10 @@
     "@school-platform/configuration": "workspace:*",
     "@school-platform/contracts": "workspace:*",
     "@school-platform/observability": "workspace:*",
-    "hono": "4.13.0",
-    "zod": "4.4.3",
+    "hono": "4.13.13",
+    "zod": "4.6.5",
     "@school-platform/database": "workspace:*",
-    "@supabase/supabase-js": "2.112.1"
+    "@supabase/supabase-js": "2.117.2"
   },
   "devDependencies": {
     "tsx": "latest",
